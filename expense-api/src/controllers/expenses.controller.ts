@@ -1,0 +1,176 @@
+import { Request, Response } from "express";
+import fs from "fs";
+
+interface IExpense {
+  id: number;
+  title: string;
+  nominal: number;
+  type: string;
+  category: string;
+  date?: string;
+}
+
+export const getExpenses = (req: Request, res: Response) => {
+  try {
+    const expense = JSON.parse(
+      fs.readFileSync("./src/data/expenses.json", "utf-8")
+    );
+    res.status(200).send({
+      status: "ok",
+      expense,
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "error",
+      msg: "Failed to read expense data",
+    });
+  }
+};
+
+export const getExpensedetail = (req: Request, res: Response) => {
+  try {
+    const expense: IExpense[] = JSON.parse(
+      fs.readFileSync("./src/data/expenses.json", "utf-8")
+    );
+    const id = +req.params.id;
+    const data = expense.find((item) => item.id === id);
+
+    if (!data) {
+      return res.status(404).send({
+        status: "error",
+        msg: "Data not found!",
+      });
+    }
+
+    res.status(200).send({
+      status: "ok",
+      expense: data,
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "error",
+      msg: "Failed to read expense data",
+    });
+  }
+};
+
+export const createExpense = (req: Request, res: Response) => {
+  try {
+    const expense: IExpense[] = JSON.parse(
+      fs.readFileSync("./src/data/expenses.json", "utf-8")
+    );
+    const id = Math.max(...expense.map((item) => item.id)) + 1;
+
+    if (
+      !req.body.title ||
+      !req.body.nominal ||
+      !req.body.type ||
+      !req.body.category
+    ) {
+      return res.status(400).send({
+        status: "error",
+        msg: "Missing required fields",
+      });
+    }
+
+    expense.push({
+      id,
+      title: req.body.title,
+      nominal: req.body.nominal,
+      type: req.body.type,
+      category: req.body.category,
+      date: req.body.date,
+    });
+
+    fs.writeFileSync(
+      "./src/data/expenses.json",
+      JSON.stringify(expense),
+      "utf-8"
+    );
+
+    res.status(201).send({
+      status: "ok",
+      msg: "Expense created!",
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "error",
+      msg: "Failed to create expense",
+    });
+  }
+};
+
+export const updateExpense = (req: Request, res: Response) => {
+  try {
+    const expense: IExpense[] = JSON.parse(
+      fs.readFileSync("./src/data/expenses.json", "utf-8")
+    );
+    const id = +req.params.id;
+    const index = expense.findIndex((item) => item.id === id);
+
+    if (index === -1) {
+      return res.status(404).send({
+        status: "error",
+        msg: "Data not found!",
+      });
+    }
+
+    const updatedExpense = {
+      ...expense[index],
+      ...req.body,
+      id,
+    };
+
+    expense[index] = updatedExpense;
+
+    fs.writeFileSync(
+      "./src/data/expenses.json",
+      JSON.stringify(expense),
+      "utf-8"
+    );
+
+    res.status(200).send({
+      status: "ok",
+      msg: "Expense updated!",
+      expense: updatedExpense,
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "error",
+      msg: "Failed to update expense",
+    });
+  }
+};
+
+export const deleteExpense = (req: Request, res: Response) => {
+  try {
+    const expense: IExpense[] = JSON.parse(
+      fs.readFileSync("./src/data/expenses.json", "utf-8")
+    );
+    const id = +req.params.id;
+    const filteredExpenses = expense.filter((item) => item.id !== id);
+
+    if (filteredExpenses.length === expense.length) {
+      return res.status(404).send({
+        status: "error",
+        msg: "Data not found!",
+      });
+    }
+
+    fs.writeFileSync(
+      "./src/data/expenses.json",
+      JSON.stringify(filteredExpenses),
+      "utf-8"
+    );
+
+    res.status(200).send({
+      status: "ok",
+      msg: "Expense deleted!",
+    });
+  } catch (error) {
+    res.status(500).send({
+      status: "error",
+      msg: "Failed to delete expense",
+    });
+  }
+};
