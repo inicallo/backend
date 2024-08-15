@@ -1,5 +1,6 @@
 import express, { Application, Request, Response } from "express";
 import router from "./router";
+import db from "./config/db";
 
 const PORT: number = 8000;
 
@@ -15,6 +16,14 @@ app.get("/api", (req: Request, res: Response) => {
 });
 
 app.use("/api", router);
+
+db.getConnection((err, connection) => {
+  if (err) {
+    return console.log(err);
+  }
+  console.log("Success Connection", connection.threadId);
+  
+})
 
 app.listen(PORT, () => {
   console.log(`[API] : http://localhost:${PORT}/api`);

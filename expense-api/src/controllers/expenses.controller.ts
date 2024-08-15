@@ -1,14 +1,7 @@
 import { Request, Response } from "express";
 import fs from "fs";
+import { IExpense } from "../type";
 
-interface IExpense {
-  id: number;
-  title: string;
-  nominal: number;
-  type: string;
-  category: string;
-  date: string;
-}
 
 export const getExpenses = (req: Request, res: Response) => {
   try {
