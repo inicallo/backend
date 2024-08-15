@@ -2,7 +2,7 @@ import { Router } from "express";
 import {
   createExpense,
   deleteExpense,
-  getExpensedetail,
+  getExpenseDetail,
   getExpenses,
   updateExpense,
 } from "../controllers/expenses.controller";
@@ -10,7 +10,7 @@ import {
 const expenseRouter = Router();
 
 expenseRouter.get("/", getExpenses);
-expenseRouter.get("/:id", getExpensedetail);
+expenseRouter.get("/:id", getExpenseDetail);
 expenseRouter.post("/", createExpense);
 expenseRouter.put("/:id", updateExpense); // PUT route to update an expense
 expenseRouter.delete("/:id", deleteExpense); // DELETE route to delete an expense

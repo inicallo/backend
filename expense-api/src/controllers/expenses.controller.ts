@@ -7,17 +7,44 @@ interface IExpense {
   nominal: number;
   type: string;
   category: string;
-  date?: string;
+  date: string;
 }
 
 export const getExpenses = (req: Request, res: Response) => {
   try {
-    const expense = JSON.parse(
+    const expense: IExpense[] = JSON.parse(
       fs.readFileSync("./src/data/expenses.json", "utf-8")
     );
+
+    const { start, end } = req.query;
+
+    // Filter data based on start and end date
+    const data = expense.filter((item) => {
+      let isValid = true;
+
+      if (start && end) {
+        isValid =
+          isValid &&
+          new Date(item.date) >= new Date(start as string) &&
+          new Date(item.date) <= new Date(end as string); // corrected here
+      }
+
+      return isValid; // returning the boolean value
+    });
+
+    const totalExpense = data
+      .filter((item) => item.type === "expense")
+      .reduce((prev, curr) => prev + curr.nominal, 0);
+
+    const totalIncome = data
+      .filter((item) => item.type === "income")
+      .reduce((prev, curr) => prev + curr.nominal, 0);
+
     res.status(200).send({
       status: "ok",
-      expense,
+      expense: data, // changed to filtered data
+      totalExpense,
+      totalIncome,
     });
   } catch (error) {
     res.status(500).send({
@@ -27,7 +54,7 @@ export const getExpenses = (req: Request, res: Response) => {
   }
 };
 
-export const getExpensedetail = (req: Request, res: Response) => {
+export const getExpenseDetail = (req: Request, res: Response) => {
   try {
     const expense: IExpense[] = JSON.parse(
       fs.readFileSync("./src/data/expenses.json", "utf-8")
